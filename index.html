@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro Pokédex</title>
+    <title>Retro Pokédex Search</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,7 +64,6 @@
             border-radius: 10px;
             padding: 15px;
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4);
-            overflow-y: auto; /* Allow scrolling */
             position: relative; /* For pseudo-elements */
             transition: background-color 0.3s ease; /* For potential theme toggle */
         }
@@ -81,10 +80,45 @@
             pointer-events: none; /* Allow interaction below */
             opacity: 0.4;
         }
+        /* Specific styling for the list screen */
+        #pokemon-list-screen {
+             display: flex;
+             flex-direction: column;
+             height: 100%; /* Make screen container take full height */
+        }
+
+        /* --- Search Input Styling --- */
+        #search-input {
+            font-family: 'VT323', monospace;
+            font-size: 1.3rem;
+            padding: 8px 12px;
+            border: 2px solid #303030;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #303030;
+            margin-bottom: 10px; /* Space between search and list */
+            width: 100%;
+            box-sizing: border-box; /* Include padding and border in width */
+            outline: none; /* Remove default focus outline */
+            position: relative; /* Ensure it's above scanlines */
+            z-index: 2;
+        }
+        #search-input::placeholder {
+            color: rgba(48, 48, 48, 0.6);
+        }
+        #search-input:focus {
+             background-color: rgba(255, 255, 255, 0.2);
+             border-color: #555;
+        }
+
 
         /* --- Pokémon List Styling --- */
         #pokemon-list {
-            max-height: 60vh; /* Limit height */
+            flex-grow: 1; /* Allow list to take remaining space */
+            overflow-y: auto; /* Enable scrolling for the list itself */
+            max-height: calc(60vh - 60px); /* Adjust height considering search bar */
+            position: relative; /* Ensure content is above scanlines */
+            z-index: 2;
         }
         .list-item {
             background-color: rgba(255, 255, 255, 0.1);
@@ -109,12 +143,27 @@
             font-size: 1rem;
             opacity: 0.7;
         }
+        .list-prompt { /* Styling for helper text in the list area */
+            color: #303030;
+            opacity: 0.8;
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
 
         /* --- Pokémon Detail Styling --- */
+        #pokemon-details-screen {
+             height: 100%; /* Make screen container take full height */
+        }
         #pokemon-details {
             min-height: 60vh; /* Ensure it takes space */
             position: relative; /* For animation */
             color: #303030;
+            overflow-y: auto; /* Allow details to scroll if needed */
+            height: 100%; /* Fill the container */
         }
         #pokemon-details.loading {
             opacity: 0;
@@ -214,13 +263,13 @@
         .type-fairy { background-color: #D685AD; }
 
         /* --- Responsive Adjustments --- */
-        /* Apply hinge styles only on medium screens and up */
         @media (min-width: 768px) {
             .pokedex-layout {
                 display: grid;
                 grid-template-columns: 1fr 25px 1fr; /* List | Hinge Space | Details */
                 gap: 20px; /* Gap between panes */
                 align-items: stretch; /* Make panes equal height */
+                height: 70vh; /* Give layout a defined height */
             }
             #pokemon-list-container { grid-column: 1 / 2; }
             #pokemon-details-container { grid-column: 3 / 4; }
@@ -233,6 +282,8 @@
             .led-red { top: 30px; left: 30px; }
             .led-yellow { top: 30px; left: 55px; }
             .led-green { top: 30px; left: 80px; }
+            #pokemon-list { max-height: none; } /* Remove max-height on desktop */
+            #pokemon-details { min-height: 0; } /* Remove min-height on desktop */
         }
 
         @media (max-width: 767px) {
@@ -249,12 +300,11 @@
                 flex-direction: column; /* Stack panes */
                 gap: 15px;
             }
-            #pokemon-list {
-                max-height: 40vh; /* Adjust height for mobile */
-            }
-            #pokemon-details {
-                min-height: auto; /* Allow details to shrink */
-            }
+             #pokemon-list-screen { height: 45vh; } /* Set height for list screen */
+             #pokemon-details-screen { height: auto; } /* Allow details screen to grow */
+            #pokemon-list { max-height: none; } /* Remove max-height */
+            #pokemon-details { min-height: auto; } /* Allow details to shrink */
+
             .led-red { top: 15px; left: 15px; }
             .led-yellow { top: 15px; left: 40px; }
             .led-green { top: 15px; left: 65px; }
@@ -272,15 +322,19 @@
 
         <div class="pokedex-layout relative">
             <div id="pokemon-list-container">
-                <div class="screen" id="pokemon-list">
-                    <div class="text-center p-4 text-gray-700">Loading Pokémon...</div>
+                <div class="screen" id="pokemon-list-screen">
+                    <input type="text" id="search-input" placeholder="Search Pokémon...">
+                    <div id="pokemon-list">
+                        </div>
                 </div>
             </div>
 
             <div id="pokemon-details-container">
-                <div class="screen" id="pokemon-details">
-                     <div class="detail-content text-center p-4 text-gray-700">
-                        Select a Pokémon from the list.
+                <div class="screen" id="pokemon-details-screen">
+                    <div id="pokemon-details">
+                         <div class="detail-content text-center p-4 text-gray-700">
+                            Select a Pokémon from the list.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -444,8 +498,10 @@
         ];
 
         // --- DOM Elements ---
+        const searchInputElement = document.getElementById('search-input');
         const pokemonListElement = document.getElementById('pokemon-list');
         const pokemonDetailsElement = document.getElementById('pokemon-details');
+        let selectedListItem = null; // Keep track of the selected list item
 
         // --- Functions ---
 
@@ -471,6 +527,9 @@
                 'special-defense': 'Sp. Def',
                 speed: 'Speed'
             };
+            // Ensure stats object exists
+            if (!stats) return '';
+            // Map stats to HTML
             return Object.entries(stats).map(([key, value]) => `
                 <div class="stat-label">${statNames[key] || key}:</div>
                 <div class="stat-value">${value}</div>
@@ -486,6 +545,7 @@
             // Animated sprite URL
             const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pokemon.id}.gif`;
             const fallbackSpriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`; // Static fallback
+            const placeholderImageUrl = `https://placehold.co/96x96/eeeeee/303030?text=No+Image`; // Placeholder
 
             // Update details after a short delay for animation effect
             setTimeout(() => {
@@ -493,10 +553,13 @@
                     <div class="detail-content">
                         <h2 id="pokemon-name">${pokemon.name}</h2>
                         <div id="pokemon-number">${formatNumber(pokemon.id)}</div>
-                        <img id="pokemon-sprite" src="${spriteUrl}" alt="${pokemon.name} sprite" onerror="this.onerror=null; this.src='${fallbackSpriteUrl}';">
+                        <img id="pokemon-sprite"
+                             src="${spriteUrl}"
+                             alt="${pokemon.name} sprite"
+                             onerror="this.onerror=null; this.src='${fallbackSpriteUrl}'; this.onerror=null; this.src='${placeholderImageUrl}';">
 
                         <div id="pokemon-types" class="text-center mb-4">
-                            ${createTypeBadges(pokemon.types)}
+                            ${createTypeBadges(pokemon.types || [])}
                         </div>
 
                         <div class="stats-grid">
@@ -520,49 +583,79 @@
 
                 // Scroll detail view into view on mobile after selection
                 if (window.innerWidth < 768) {
-                    pokemonDetailsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                     // Find the container and scroll that instead of the element itself
+                    const detailsContainer = document.getElementById('pokemon-details-container');
+                    if (detailsContainer) {
+                        detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                 }
             }, 150); // Match timeout to CSS transition duration slightly
         }
 
-        // Function to populate the Pokémon list
-        function populatePokemonList() {
-            pokemonListElement.innerHTML = ''; // Clear loading message
-            pokemonData.forEach(pokemon => {
-                const listItem = document.createElement('div');
-                listItem.classList.add('list-item');
-                listItem.dataset.id = pokemon.id; // Store ID for easy lookup
-                listItem.innerHTML = `
-                    <span class="name">${pokemon.name}</span>
-                    <span class="number">${formatNumber(pokemon.id)}</span>
-                `;
+        // Function to update the Pokémon list based on search term
+        function updatePokemonList(searchTerm = '') {
+            pokemonListElement.innerHTML = ''; // Clear current list/prompt
+            const lowerSearchTerm = searchTerm.toLowerCase().trim();
 
-                // Add click event listener
-                listItem.addEventListener('click', () => {
-                    // Remove 'selected' class from previously selected item
-                    const currentlySelected = pokemonListElement.querySelector('.selected');
-                    if (currentlySelected) {
-                        currentlySelected.classList.remove('selected');
-                    }
-                    // Add 'selected' class to the clicked item
-                    listItem.classList.add('selected');
-                    // Display the details for the clicked Pokémon
-                    displayPokemonDetails(pokemon);
+            // Determine the message or list content
+            if (lowerSearchTerm === '') {
+                pokemonListElement.innerHTML = '<div class="list-prompt">Type a name to search...</div>';
+                return; // Stop if search is empty
+            }
+
+            // Filter the main data based on the search term (case-insensitive)
+            const filteredPokemon = pokemonData.filter(pokemon =>
+                pokemon.name.toLowerCase().includes(lowerSearchTerm)
+            );
+
+            if (filteredPokemon.length === 0) {
+                pokemonListElement.innerHTML = '<div class="list-prompt">No matches found.</div>';
+            } else {
+                // Create and append list items for each filtered Pokémon
+                filteredPokemon.forEach(pokemon => {
+                    const listItem = document.createElement('div');
+                    listItem.classList.add('list-item');
+                    // Store the actual pokemon object reference for the click handler
+                    // This avoids needing to search the main array again on click
+                    listItem.pokemonDataRef = pokemon;
+
+                    listItem.innerHTML = `
+                        <span class="name">${pokemon.name}</span>
+                        <span class="number">${formatNumber(pokemon.id)}</span>
+                    `;
+
+                    // Add click event listener to the list item
+                    listItem.addEventListener('click', () => {
+                        // Remove 'selected' class from the previously selected item
+                        if (selectedListItem) {
+                            selectedListItem.classList.remove('selected');
+                        }
+                        // Add 'selected' class to the clicked item and update tracking variable
+                        listItem.classList.add('selected');
+                        selectedListItem = listItem;
+
+                        // Display the details for the clicked Pokémon using the stored reference
+                        displayPokemonDetails(listItem.pokemonDataRef);
+                    });
+
+                    pokemonListElement.appendChild(listItem);
                 });
-
-                pokemonListElement.appendChild(listItem);
-            });
+            }
         }
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
-            populatePokemonList();
-            // Optionally display the first Pokémon by default
-            // if (pokemonData.length > 0) {
-            //     displayPokemonDetails(pokemonData[0]);
-            //     const firstItem = pokemonListElement.querySelector('.list-item');
-            //     if(firstItem) firstItem.classList.add('selected');
-            // }
+            // Set the initial prompt in the list area
+            updatePokemonList();
+
+            // Add event listener to the search input for live filtering
+            searchInputElement.addEventListener('input', (event) => {
+                updatePokemonList(event.target.value);
+                 // Clear selection highlight when search changes
+                 selectedListItem = null;
+                // Optional: Clear details pane when search changes?
+                // pokemonDetailsElement.innerHTML = '<div class="detail-content text-center p-4 text-gray-700">Select a Pokémon from the list.</div>';
+            });
         });
 
     </script>
