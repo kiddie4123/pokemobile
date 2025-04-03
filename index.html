@@ -13,6 +13,8 @@
         body {
             font-family: 'VT323', monospace; /* Retro pixel font */
             background-color: #f0f0f0; /* Light grey background */
+            /* Prevent background scrolling when details scroll on mobile */
+            /* overflow: hidden; */ /* Re-evaluate if needed */
         }
 
         /* --- Pokédex Device Styling --- */
@@ -66,6 +68,8 @@
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4);
             position: relative; /* For pseudo-elements */
             transition: background-color 0.3s ease; /* For potential theme toggle */
+            /* Ensure screen itself doesn't scroll, inner content will */
+            overflow: hidden;
         }
         .screen::before { /* Scanline effect */
             content: "";
@@ -80,7 +84,7 @@
             pointer-events: none; /* Allow interaction below */
             opacity: 0.4;
         }
-        /* Specific styling for the list screen */
+        /* Specific styling for the list screen container */
         #pokemon-list-screen {
              display: flex;
              flex-direction: column;
@@ -90,8 +94,8 @@
         /* --- Search Input Styling --- */
         #search-input {
             font-family: 'VT323', monospace;
-            font-size: 1.3rem;
-            padding: 8px 12px;
+            font-size: 1.4rem; /* Slightly larger for mobile tap */
+            padding: 10px 12px; /* More padding for tap */
             border: 2px solid #303030;
             border-radius: 5px;
             background-color: rgba(255, 255, 255, 0.1);
@@ -102,6 +106,7 @@
             outline: none; /* Remove default focus outline */
             position: relative; /* Ensure it's above scanlines */
             z-index: 2;
+            flex-shrink: 0; /* Prevent search bar from shrinking */
         }
         #search-input::placeholder {
             color: rgba(48, 48, 48, 0.6);
@@ -116,20 +121,21 @@
         #pokemon-list {
             flex-grow: 1; /* Allow list to take remaining space */
             overflow-y: auto; /* Enable scrolling for the list itself */
-            max-height: calc(60vh - 60px); /* Adjust height considering search bar */
+            /* Removed fixed max-height, let flexbox handle it */
             position: relative; /* Ensure content is above scanlines */
             z-index: 2;
+            min-height: 50px; /* Ensure it has some height even when empty */
         }
         .list-item {
             background-color: rgba(255, 255, 255, 0.1);
             border: 2px solid #303030;
             border-radius: 5px;
             margin-bottom: 8px;
-            padding: 8px 12px;
+            padding: 10px 12px; /* More padding for tap */
             cursor: pointer;
             transition: background-color 0.2s ease, transform 0.1s ease;
             color: #303030; /* Dark text on green screen */
-            font-size: 1.3rem; /* Larger pixel font */
+            font-size: 1.4rem; /* Slightly larger for mobile */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -140,13 +146,13 @@
             transform: scale(1.02);
         }
         .list-item .number {
-            font-size: 1rem;
+            font-size: 1.1rem; /* Adjusted size */
             opacity: 0.7;
         }
         .list-prompt { /* Styling for helper text in the list area */
             color: #303030;
             opacity: 0.8;
-            font-size: 1.2rem;
+            font-size: 1.3rem; /* Adjusted size */
             text-align: center;
             padding: 20px;
             position: relative;
@@ -157,13 +163,16 @@
         /* --- Pokémon Detail Styling --- */
         #pokemon-details-screen {
              height: 100%; /* Make screen container take full height */
+             display: flex; /* Use flexbox for inner content */
+             flex-direction: column;
         }
         #pokemon-details {
-            min-height: 60vh; /* Ensure it takes space */
+            /* Removed min-height */
             position: relative; /* For animation */
             color: #303030;
             overflow-y: auto; /* Allow details to scroll if needed */
             height: 100%; /* Fill the container */
+            flex-grow: 1; /* Allow details to take available space */
         }
         #pokemon-details.loading {
             opacity: 0;
@@ -177,37 +186,38 @@
         .detail-content {
             position: relative; /* Ensure content is above scanlines */
             z-index: 2;
+            padding-bottom: 15px; /* Add padding at the bottom */
         }
 
         #pokemon-sprite {
             background-color: rgba(255, 255, 255, 0.15);
             border: 3px solid #303030;
             border-radius: 5px;
-            width: 120px; /* Fixed sprite size */
-            height: 120px;
+            width: 100px; /* Slightly smaller for mobile */
+            height: 100px;
             object-fit: contain; /* Ensure sprite fits */
             image-rendering: pixelated; /* Keep sprite crisp */
-            margin: 0 auto 15px auto; /* Center sprite */
+            margin: 0 auto 10px auto; /* Center sprite, less margin */
             display: block;
         }
         #pokemon-name {
-            font-size: 2rem;
+            font-size: 1.8rem; /* Adjusted size */
             text-align: center;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             text-transform: capitalize;
         }
         #pokemon-number {
-            font-size: 1.2rem;
+            font-size: 1.1rem; /* Adjusted size */
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             opacity: 0.8;
         }
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr); /* Two columns for stats */
-            gap: 5px 15px; /* Row and column gap */
-            font-size: 1.1rem;
-            margin-top: 15px;
+            gap: 4px 10px; /* Reduced gap */
+            font-size: 1rem; /* Adjusted size */
+            margin-top: 10px;
         }
         .stat-label {
             font-weight: bold;
@@ -218,28 +228,31 @@
         }
         .type-badge {
             display: inline-block;
-            padding: 4px 10px;
+            padding: 3px 8px; /* Adjusted padding */
             border-radius: 5px;
             color: white;
-            font-size: 1rem;
+            font-size: 0.9rem; /* Adjusted size */
             text-transform: uppercase;
-            margin: 0 3px;
+            margin: 0 2px;
             border: 1px solid rgba(0,0,0,0.2);
             box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
+        #pokemon-types {
+             margin-bottom: 10px; /* Adjusted margin */
+        }
         .info-section {
-            margin-top: 15px;
-            padding-top: 10px;
+            margin-top: 10px;
+            padding-top: 8px;
             border-top: 2px dashed rgba(48, 48, 48, 0.3);
         }
         .info-title {
-            font-size: 1.3rem;
-            margin-bottom: 5px;
+            font-size: 1.2rem; /* Adjusted size */
+            margin-bottom: 4px;
             font-weight: bold;
         }
         #pokemon-flavor, #pokemon-evolution {
-            font-size: 1.1rem;
-            line-height: 1.4;
+            font-size: 1rem; /* Adjusted size */
+            line-height: 1.3;
         }
 
         /* --- Type Colors --- */
@@ -263,13 +276,17 @@
         .type-fairy { background-color: #D685AD; }
 
         /* --- Responsive Adjustments --- */
+
+        /* Desktop Styles (min-width: 768px) */
         @media (min-width: 768px) {
             .pokedex-layout {
                 display: grid;
                 grid-template-columns: 1fr 25px 1fr; /* List | Hinge Space | Details */
                 gap: 20px; /* Gap between panes */
                 align-items: stretch; /* Make panes equal height */
-                height: 70vh; /* Give layout a defined height */
+                /* Let content determine height, but set a min-height */
+                min-height: 65vh;
+                max-height: 80vh; /* Prevent excessive height */
             }
             #pokemon-list-container { grid-column: 1 / 2; }
             #pokemon-details-container { grid-column: 3 / 4; }
@@ -278,19 +295,40 @@
                 position: static; /* Reset absolute positioning */
                 transform: none;
                 height: auto; /* Let grid control height */
+                display: block; /* Ensure hinge is shown */
             }
             .led-red { top: 30px; left: 30px; }
             .led-yellow { top: 30px; left: 55px; }
             .led-green { top: 30px; left: 80px; }
-            #pokemon-list { max-height: none; } /* Remove max-height on desktop */
-            #pokemon-details { min-height: 0; } /* Remove min-height on desktop */
+
+             /* Restore desktop font sizes if needed */
+            #search-input { font-size: 1.3rem; padding: 8px 12px;}
+            .list-item { font-size: 1.3rem; padding: 8px 12px;}
+            .list-item .number { font-size: 1rem; }
+            .list-prompt { font-size: 1.2rem; }
+            #pokemon-sprite { width: 120px; height: 120px; margin-bottom: 15px;}
+            #pokemon-name { font-size: 2rem; margin-bottom: 5px;}
+            #pokemon-number { font-size: 1.2rem; margin-bottom: 15px;}
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 5px 15px; font-size: 1.1rem; margin-top: 15px;}
+            .stat-value { text-align: right; margin-left: 0;}
+            .type-badge { padding: 4px 10px; font-size: 1rem; margin: 0 3px;}
+            #pokemon-types { margin-bottom: 15px; }
+            .info-section { margin-top: 15px; padding-top: 10px;}
+            .info-title { font-size: 1.3rem; margin-bottom: 5px;}
+            #pokemon-flavor, #pokemon-evolution { font-size: 1.1rem; line-height: 1.4;}
         }
 
+        /* Mobile Styles (max-width: 767px) */
         @media (max-width: 767px) {
             .pokedex-body {
                 border-radius: 15px; /* Slightly less rounded on mobile */
-                padding: 15px;
-                margin: 1rem;
+                padding: 10px; /* Reduced padding */
+                margin: 0.5rem; /* Reduced margin */
+                border-width: 6px; /* Thinner border */
+                /* Ensure body takes up more vertical space */
+                height: calc(100vh - 1rem); /* Full height minus margin */
+                display: flex; /* Use flexbox for inner layout */
+                flex-direction: column;
             }
              .pokedex-body::before { /* Hide hinge on mobile */
                 display: none;
@@ -298,24 +336,38 @@
             .pokedex-layout {
                 display: flex;
                 flex-direction: column; /* Stack panes */
-                gap: 15px;
+                gap: 10px; /* Reduced gap */
+                flex-grow: 1; /* Allow layout to fill body */
+                min-height: 0; /* Override desktop min-height */
             }
-             #pokemon-list-screen { height: 45vh; } /* Set height for list screen */
-             #pokemon-details-screen { height: auto; } /* Allow details screen to grow */
-            #pokemon-list { max-height: none; } /* Remove max-height */
-            #pokemon-details { min-height: auto; } /* Allow details to shrink */
+            /* Let flexbox manage heights, give list ability to scroll */
+             #pokemon-list-screen {
+                 /* Removed fixed height */
+                 max-height: 50vh; /* Limit list height */
+                 flex-shrink: 0; /* Don't shrink list container */
+             }
+             #pokemon-details-screen {
+                 /* Removed height: auto */
+                 flex-grow: 1; /* Allow details to take remaining space */
+                 min-height: 0; /* Allow shrinking */
+             }
+             .screen {
+                 padding: 10px; /* Reduced padding */
+             }
 
-            .led-red { top: 15px; left: 15px; }
-            .led-yellow { top: 15px; left: 40px; }
-            .led-green { top: 15px; left: 65px; }
+            .led { /* Adjust LED size/position */
+                width: 12px; height: 12px; border-width: 1px;
+            }
+            .led-red { top: 12px; left: 12px; }
+            .led-yellow { top: 12px; left: 30px; }
+            .led-green { top: 12px; left: 48px; }
+
             .stats-grid { grid-template-columns: 1fr; } /* Single column stats */
             .stat-value { text-align: left; margin-left: 10px;}
         }
     </style>
 </head>
-<body class="bg-gray-200 p-4">
-
-    <div class="pokedex-body">
+<body class="bg-gray-200 p-0 sm:p-4"> <div class="pokedex-body">
         <div class="led led-red"></div>
         <div class="led led-yellow"></div>
         <div class="led led-green"></div>
@@ -325,7 +377,8 @@
                 <div class="screen" id="pokemon-list-screen">
                     <input type="text" id="search-input" placeholder="Search Pokémon...">
                     <div id="pokemon-list">
-                        </div>
+                        <div class="list-prompt">Type a name to search...</div>
+                    </div>
                 </div>
             </div>
 
@@ -512,6 +565,8 @@
 
         // Function to create type badges HTML
         function createTypeBadges(types) {
+             // Ensure types is an array
+             if (!Array.isArray(types)) return '';
             return types.map(type =>
                 `<span class="type-badge type-${type.toLowerCase()}">${type}</span>`
             ).join('');
@@ -585,8 +640,13 @@
                 if (window.innerWidth < 768) {
                      // Find the container and scroll that instead of the element itself
                     const detailsContainer = document.getElementById('pokemon-details-container');
-                    if (detailsContainer) {
-                        detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                     // Scroll the details *pane* not the whole container
+                    const detailsPane = document.getElementById('pokemon-details');
+                    if (detailsPane) {
+                         // Scroll to the top of the details pane smoothly
+                        detailsPane.scrollTo({ top: 0, behavior: 'smooth' });
+                        // Also ensure the container itself is visible if needed
+                         detailsContainer?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     }
                 }
             }, 150); // Match timeout to CSS transition duration slightly
@@ -600,6 +660,12 @@
             // Determine the message or list content
             if (lowerSearchTerm === '') {
                 pokemonListElement.innerHTML = '<div class="list-prompt">Type a name to search...</div>';
+                // Clear details pane when search is cleared
+                pokemonDetailsElement.innerHTML = `
+                    <div class="detail-content text-center p-4 text-gray-700">
+                        Select a Pokémon from the list.
+                    </div>`;
+                selectedListItem = null; // Clear selection
                 return; // Stop if search is empty
             }
 
@@ -616,7 +682,6 @@
                     const listItem = document.createElement('div');
                     listItem.classList.add('list-item');
                     // Store the actual pokemon object reference for the click handler
-                    // This avoids needing to search the main array again on click
                     listItem.pokemonDataRef = pokemon;
 
                     listItem.innerHTML = `
@@ -651,10 +716,13 @@
             // Add event listener to the search input for live filtering
             searchInputElement.addEventListener('input', (event) => {
                 updatePokemonList(event.target.value);
-                 // Clear selection highlight when search changes
-                 selectedListItem = null;
-                // Optional: Clear details pane when search changes?
-                // pokemonDetailsElement.innerHTML = '<div class="detail-content text-center p-4 text-gray-700">Select a Pokémon from the list.</div>';
+                 // Clear selection highlight when search changes (already done in updatePokemonList if term is empty)
+                // Optional: Clear details pane immediately when typing starts?
+                // if(event.target.value.length === 1 && selectedListItem) { // Example: Clear on first character typed
+                //     pokemonDetailsElement.innerHTML = '<div class="detail-content text-center p-4 text-gray-700">Select a Pokémon from the list.</div>';
+                //     selectedListItem.classList.remove('selected');
+                //     selectedListItem = null;
+                // }
             });
         });
 
